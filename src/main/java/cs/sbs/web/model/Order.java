@@ -6,6 +6,7 @@ public class Order {
     private String customer;
     private String food;
     private int quantity;
+
     public Order(int id, String customer, String food, int quantity) {
         this.id = id;
         this.customer = customer;
@@ -17,20 +18,31 @@ public class Order {
         return id;
     }
 
+    public void setId(int id) {
+        this.id = id;
+    }
+
     public String getCustomer() {
         return customer;
+    }
+
+    public void setCustomer(String customer) {
+        this.customer = customer;
     }
 
     public String getFood() {
         return food;
     }
 
+    public void setFood(String food) {
+        this.food = food;
+    }
+
     public int getQuantity() {
         return quantity;
     }
 
-    @Override
-    public String toString() {
-        return "Order ID: " + id + "\nCustomer: " + customer + "\nFood: " + food + "\nQuantity: " + quantity;
+    public void setQuantity(int quantity) {
+        this.quantity = quantity;
     }
 }

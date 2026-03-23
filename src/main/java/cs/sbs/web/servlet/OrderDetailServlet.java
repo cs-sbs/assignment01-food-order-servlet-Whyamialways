@@ -1,41 +1,69 @@
 package cs.sbs.web.servlet;
 
+import cs.sbs.web.model.Order;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import java.io.IOException;
-import cs.sbs.web.model.DataStore;
-import cs.sbs.web.model.Order;
+import java.io.PrintWriter;
+import java.util.List;
+import java.util.ArrayList;
 
 public class OrderDetailServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
 
+    @Override
     protected void doGet(HttpServletRequest req, HttpServletResponse resp)
             throws ServletException, IOException {
-        resp.setContentType("text/plain; charset=UTF-8");
 
-        String path = req.getPathInfo(); // e.g. /1001
-        if (path == null || path.length() <= 1) {
-            resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().println("Error: order id missing");
+        String pathInfo = req.getPathInfo();
+        resp.setContentType("text/plain; charset=UTF-8");
+        PrintWriter out = resp.getWriter();
+
+        if (pathInfo == null || pathInfo.equals("/")) {
+            resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
+            out.println("Error: Missing order ID");
             return;
         }
 
-        String idStr = path.substring(1);
-        int id;
+        String orderIdStr = pathInfo.substring(1);
+        int orderId;
         try {
-            id = Integer.parseInt(idStr);
+            orderId = Integer.parseInt(orderIdStr);
         } catch (NumberFormatException e) {
             resp.setStatus(HttpServletResponse.SC_BAD_REQUEST);
-            resp.getWriter().println("Error: invalid order id");
+            out.println("Error: Invalid order ID format");
             return;
         }
 
-        Order order = DataStore.findOrder(id);
-        if (order == null) {
+        Object ordersAttr = getServletContext().getAttribute("orders");
+        List<Order> orders = new ArrayList<>();
+        if (ordersAttr instanceof List<?>) {
+            for (Object o : (List<?>) ordersAttr) {
+                if (o instanceof Order) {
+                    orders.add((Order) o);
+                }
+            }
+        }
+
+        Order foundOrder = null;
+        if (!orders.isEmpty()) {
+            for (Order order : orders) {
+                if (order.getId() == orderId) {
+                    foundOrder = order;
+                    break;
+                }
+            }
+        }
+
+        if (foundOrder != null) {
+            out.println("Order Detail\n");
+            out.println("Order ID: " + foundOrder.getId());
+            out.println("Customer: " + foundOrder.getCustomer());
+            out.println("Food: " + foundOrder.getFood());
+            out.println("Quantity: " + foundOrder.getQuantity());
+        } else {
             resp.setStatus(HttpServletResponse.SC_NOT_FOUND);
-            resp.getWriter().println("Error: order not found");
-            return;
+            out.println("Order not found");
         }
-
-        resp.getWriter().println("Order Detail\n\n" + order.toString());
     }
 }
